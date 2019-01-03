@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<head>
+  <title>Nothing to see here!</title>
+  <link rel="stylesheet" href="sliders.css" />
+  <link rel="stylesheet" href="sidebar.css" />
+
+  <script
+    type="text/javascript"
+    async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"
+  ></script>
+</head>
+<body>
+  <aside class="sidenav">
+    <h1>Camera rotaters</h1>
+
+    <h2>Theta \(\theta\)</h2>
+    <div class="slidecontainer">
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value="50"
+        class="slider"
+        id="theta"
+      />
+    </div>
+
+    <h2>Phi</h2>
+    <div class="slidecontainer">
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value="50"
+        class="slider"
+        id="phi"
+      />
+    </div>
+  </aside>
+
+  <section class="main">
+    <p>Welcome to the semantic web!</p>
+
+    <canvas height="600" width="600" id="theCanvas"> </canvas>
+  </section>
+
+  <script>
+    // Placeholder code
+    var canvas = document.getElementById("theCanvas");
+    var context = canvas.getContext("2d");
+
+    // Fill the entire canvas with a green rectangle
+    context.fillStyle = "green";
+    /**
+    context.fillRect(
+      0,
+      0,
+      Number(canvas.getAttribute("width")),
+      Number(canvas.getAttribute("height"))
+    ); **/
+  </script>
+
+  <script src="../main.ts"></script>
+</body>

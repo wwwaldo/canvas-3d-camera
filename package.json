@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "typescript": "^3.2.2"
+  },
+  "dependencies": {
+    "@types/node": "^10.12.18",
+    "jquery": "^3.3.1"
+  }
+}
