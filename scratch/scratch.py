@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from mpl_toolkits.mplot3d import Axes3D
 
+# Implementation of quaternions.
+
 class Quaternion:
     def __init__(self, r, i, j, k):
         self.r, self.i, self.j, self.k = r, i, j, k

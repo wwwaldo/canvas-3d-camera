@@ -14,7 +14,7 @@ const dodecahedron_verts: quat.Point3D[] = Object.values(
 
 // @ts-ignore
 const canvas: HTMLCanvasElement = document.getElementById("theCanvas");
-const c = new camera.Camera(3, 3, canvas);
+const c = new camera.Camera(1, 1, canvas);
 
 dodecahedron_verts.forEach(pt => camera.addToWorld(c, pt));
 

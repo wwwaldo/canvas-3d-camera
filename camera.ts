@@ -3,8 +3,8 @@ import { Point3D, rotatePoints } from "./quaternion";
 
 // TODO: move this to quaternion
 const enum RotationAxis {
-    zAxis,
-    xyPlane
+  zAxis,
+  xyPlane
 }
 
 class CanvasPoint {
@@ -33,7 +33,7 @@ class Camera {
   render: Point3D[];
 
   constructor(xlim: number, ylim: number, canvas: HTMLCanvasElement) {
-    this.position = new Point3D(0,0,1);
+    this.position = new Point3D(0, 0, 2);
 
     this.xlim = xlim;
     this.ylim = ylim;
@@ -61,17 +61,17 @@ function addToWorld(c: Camera, p: Point3D) {
 }
 
 function rotateCamera(c: Camera, theta: number, phi: number) {
-    let theta_axis = new Point3D(0, 1, 0);
-    let phi_axis = new Point3D(-1, 0, 0);
+  let theta_axis = new Point3D(0, 1, 0);
+  let phi_axis = new Point3D(-1, 0, 0);
 
-    c.render = rotatePoints( c.world, theta_axis, theta);
-    c.render = rotatePoints( c.render, phi_axis, phi);
+  c.render = rotatePoints(c.world, theta_axis, theta);
+  c.render = rotatePoints(c.render, phi_axis, phi);
 }
 
 function renderWorld(c: Camera) {
   c.ctx.clearRect(0, 0, c.canvas_xlim * 2, c.canvas_ylim * 2);
-  c.render.forEach( (pt) => {
-      displayPoint( c, snapPoint(c, pt) );
+  c.render.forEach(pt => {
+    displayPoint(c, snapPoint(c, pt));
   });
 }
 
@@ -87,11 +87,18 @@ function displayPoint(c: Camera, p: CanvasPoint) {
 }
 
 function projectPoint(c: Camera, p: Point3D): number[] {
-  //TODO: actual projection.
-  if (p.z > 0){
-      return [Infinity, Infinity]
-  } 
-  return [p.x, p.y];
+  // orthographic projection ("lose the z coordinate")
+  // return [p.x, p.y];
+
+  // Perspective transformation
+  //let [n, f] = [znear, zfar];
+  let projected_point = [ // translated from perspective matrix
+    (p.x) / (1 - p.z / c.position.z),
+    (p.y) / (1 - p.z / c.position.z),
+    (p.z) / (1 - p.z / c.position.z)
+  ];
+
+  return [projected_point[0], projected_point[1]];
 }
 
 // Analogous to the "viewing transform"
