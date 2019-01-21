@@ -6,6 +6,8 @@ See [this webpage](http://caroline-lin.com/camera).
 
 ## Building
 
+This section concerns building the demo from your local machine.
+
 1. Install parcelJS using your favourite package manager. I used `npm`.
 
 See install instructions [here](https://parceljs.org/).
