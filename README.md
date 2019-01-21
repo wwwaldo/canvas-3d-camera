@@ -1,5 +1,9 @@
 # Canvas 3D Camera
 
+## Live Demo
+
+See [this webpage](http://caroline-lin.com/camera).
+
 ## Building
 
 1. Install parcelJS using your favourite package manager. I used `npm`.
