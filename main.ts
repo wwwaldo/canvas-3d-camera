@@ -19,8 +19,11 @@ const dodecahedron_faces: number[][] = Object.values(
 const canvas: HTMLCanvasElement = document.getElementById("theCanvas");
 const c = new camera.Camera(1, 1, canvas);
 
-dodecahedron_verts.forEach(pt => camera.addToWorld(c, pt));
-dodecahedron_faces.forEach(face => camera.addFace(c, face));
+const m = new camera.Model(dodecahedron_verts, dodecahedron_faces);
+camera.addModelToWorld(c, m);
+
+// Animation
+
 
 // Register those callbacks!
 var theta : number = 0;

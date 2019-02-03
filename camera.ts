@@ -1,6 +1,41 @@
 // Hurray, ECMAScript 2015!
 import { Point3D, rotatePoints } from "./quaternion";
 
+// A model (object) living in the world.
+class Model {
+  name: string
+  verts: Point3D[]
+  faces: number[][]
+
+  constructor(verts: Point3D[], faces: number[][], name = ''){
+    this.name = name
+    this.verts = verts
+    this.faces = []
+    faces.forEach( face => this.addFace(face) )
+  }
+
+  isValidFace(face: number[]){
+    let nverts = this.verts.length;
+    if (face[0] != face.length - 1){
+      return false; // PLY format not followed
+    }
+    let inds = face.slice(1, face.length);
+    if ( !inds.every( ind => nverts >= ind ) ){
+      return false;
+    }
+    return true;
+  }
+
+  addFace(face: number[]){
+    if (this.isValidFace(face)){
+      this.faces.push(face.slice(1, face.length));
+    } else{
+      console.log(face)
+      throw `Tried to add an invalid face to Model ${this.name}`
+    }
+  }
+}
+
 // TODO: move this to quaternion
 const enum RotationAxis {
   zAxis,
@@ -34,8 +69,10 @@ class Camera {
 
   faces: number[][];
 
+  models: Model[];
+
   constructor(xlim: number, ylim: number, canvas: HTMLCanvasElement) {
-    this.position = new Point3D(0, 0, 2);
+    this.position = new Point3D(0, 0, 1);
 
     this.xlim = xlim;
     this.ylim = ylim;
@@ -50,12 +87,30 @@ class Camera {
     this.render = [];
 
     this.faces = [];
+
+    this.models = [];
   }
+}
+
+// Overload a point with a model so we can rotate things independently.
+function addModelToWorld(c: Camera, m: Model){
+  let pts = m.verts;
+
+  // temporary hack: properly refactor camera class later
+  pts.forEach(p => {
+    addPointToWorld(c, p);
+  });
+
+  c.models.push(m);
+
+  console.log(c.world);
+  console.log(c.faces);
+  
 }
 
 /* The world is a set of points. To make the camera see a point, we need to
     add it to the world. */
-function addToWorld(c: Camera, p: Point3D) {
+function addPointToWorld(c: Camera, p: Point3D) {
   let tmp = [p.x, p.y, p.z].map(
     (el, i) => el - [c.position.x, c.position.y, c.position.z][i]
   );
@@ -65,7 +120,7 @@ function addToWorld(c: Camera, p: Point3D) {
 }
 
 /* Add a face to the camera. */
-function addFace(c: Camera, face: number[]) {
+function addFaceToWorld(c: Camera, face: number[]) {
   let nverts = c.world.length;
   let inds = face.slice(1, face.length); // discard first coord
   
@@ -84,25 +139,34 @@ function rotateCamera(c: Camera, theta: number, phi: number) {
   c.render = rotatePoints(c.render, phi_axis, phi);
 }
 
+function renderModel(c: Camera, m: Model){
+  let pts = c.render //m.verts;
+  let faces = m.faces;
+
+  pts.forEach(pt =>
+    displayPoint(c, snapPoint(c, pt))
+  );
+  
+  // Refactor dep on c.render
+  faces.forEach(face =>
+    displayFace(c, face)
+  ); 
+
+}
+
+
+// TODO: Refactor so that models are rendered instead of individual pts and faces
 function renderWorld(c: Camera) {
   c.ctx.clearRect(0, 0, c.canvas_xlim * 2, c.canvas_ylim * 2);
-  
-  // TODO: Change this to Debug
-  c.render.forEach(pt => {
-    displayPoint(c, snapPoint(c, pt));
-  });
-
-  // No z-buffering: render faces
-  // this is all fucked up rn
-  c.faces.forEach(face => {
-    displayFace(c, face)
-  });
+  renderModel(c, c.models[0])
 }
 
 /* Internals */
 
 function displayFace(c: Camera, face: number[]){
   if (c.ctx) {
+    let m = c.models[0]; // Fix this
+
     let pts = c.render.map( pt => snapPoint(c, pt))
     pts = pts.filter( pt => face.includes( pts.indexOf(pt) ) )
  
@@ -114,7 +178,7 @@ function displayFace(c: Camera, face: number[]){
     );
     
     //c.ctx.stroke(); // use c.ctx.fill() for fill triangles
-    c.ctx.fillStyle = `rgb(0, ${c.faces.indexOf(face) * 8}, 0)`;
+    c.ctx.fillStyle = `rgb(0, ${m.faces.indexOf(face) * 8}, 0)`;
     c.ctx.fill();
   }
 }
@@ -161,5 +225,5 @@ function snapPoint(c: Camera, p: Point3D): CanvasPoint {
   return new CanvasPoint(x, y);
 }
 
-export { addToWorld, renderWorld, Camera, rotateCamera, RotationAxis, addFace };
+export { addModelToWorld, renderWorld, Camera, rotateCamera, RotationAxis, Model };
 //export * from "./camera";
