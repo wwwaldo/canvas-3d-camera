@@ -40,7 +40,7 @@ Add the flag
 
 `--public-url ./`
 
-to `parcel build view/index.html`
+to `parcel build index.html`
 
 and copy the `dist` folder to your server directory. See my confused [StackExchange question](https://stackoverflow.com/questions/54048932/how-do-i-deploy-my-web-app-built-with-parceljs-on-my-ubuntu-18-10-server).
 
