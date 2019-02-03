@@ -1,5 +1,6 @@
 import * as camera from "./camera";
 import * as quat from "./quaternion";
+import { deflateRaw } from "zlib";
 
 // via https://people.sc.fsu.edu/~jburkardt/data/ply/dodecahedron.ply
 // now hosted statically! (note: Object.values is ES2017)
@@ -24,7 +25,6 @@ camera.addModelToWorld(c, m);
 
 // Animation
 
-
 // Register those callbacks!
 var theta : number = 0;
 var phi : number = 0;
@@ -33,19 +33,22 @@ document.getElementById("theta").addEventListener("input", event => {
   // @ts-ignore
   let value = event.target.value - event.target.defaultValue;
   theta = (value / 50) * Math.PI ; // Convert value to radians
-  camera.rotateCamera(c, theta, phi);
-  console.log(c.render[0].z)
-
-  camera.renderWorld(c);
+  c.theta = theta;
 });
 
 document.getElementById("phi").addEventListener("input", event => {
   // @ts-ignore
   let value = event.target.value - event.target.defaultValue;
   phi = (value / 50) * (Math.PI / 2);
-
-  camera.rotateCamera(c, theta, phi);
-  camera.renderWorld(c);
+  c.phi = phi;
 });
 
-camera.renderWorld(c);
+
+function draw(){
+  c.models[0].rotateModel();
+  camera.renderWorld(c);
+  window.requestAnimationFrame(draw);
+}
+
+window.requestAnimationFrame(draw)
+

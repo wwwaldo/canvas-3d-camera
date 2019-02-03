@@ -2,6 +2,8 @@
 import { Point3D, rotatePoints } from "./quaternion";
 
 // A model (object) living in the world.
+// A model should have 3D coordinates in 'model space'
+// So that the center of mass of the model is the origin in model space
 class Model {
   name: string
   verts: Point3D[]
@@ -34,6 +36,18 @@ class Model {
       throw `Tried to add an invalid face to Model ${this.name}`
     }
   }
+
+  rotateModel(){
+    let v = new Point3D(1, 0, 0); // 'wlog'
+    var time = performance.now() / 60 ** 4;
+    this.verts = rotatePoints(this.verts, v, (2 * Math.PI) * time);
+    
+  }
+
+  translateModel(v: Point3D){
+    // TODO
+  }
+
 }
 
 // TODO: move this to quaternion
@@ -70,9 +84,11 @@ class Camera {
   faces: number[][];
 
   models: Model[];
+  theta: number;
+  phi: number;
 
   constructor(xlim: number, ylim: number, canvas: HTMLCanvasElement) {
-    this.position = new Point3D(0, 0, 1);
+    this.position = new Point3D(0, 0, -2);
 
     this.xlim = xlim;
     this.ylim = ylim;
@@ -83,79 +99,40 @@ class Camera {
     this.ctx = canvas.getContext("2d");
 
     this.radius = 5;
-    this.world = [];
-    this.render = [];
+
 
     this.faces = [];
 
     this.models = [];
+
+    this.theta = 0;
+    this.phi = 0;
   }
 }
 
 // Overload a point with a model so we can rotate things independently.
 function addModelToWorld(c: Camera, m: Model){
-  let pts = m.verts;
-
-  // temporary hack: properly refactor camera class later
-  pts.forEach(p => {
-    addPointToWorld(c, p);
-  });
-
   c.models.push(m);
-
-  console.log(c.world);
-  console.log(c.faces);
-  
 }
 
 /* The world is a set of points. To make the camera see a point, we need to
     add it to the world. */
-function addPointToWorld(c: Camera, p: Point3D) {
-  let tmp = [p.x, p.y, p.z].map(
-    (el, i) => el - [c.position.x, c.position.y, c.position.z][i]
-  );
-
-  c.world.push(new Point3D(tmp[0], tmp[1], tmp[2]));
-  c.render.push(new Point3D(tmp[0], tmp[1], tmp[2]));
-}
-
-/* Add a face to the camera. */
-function addFaceToWorld(c: Camera, face: number[]) {
-  let nverts = c.world.length;
-  let inds = face.slice(1, face.length); // discard first coord
-  
-  if ( !inds.every( ind => nverts >= ind ) ){
-    return -1;
-  }
-  c.faces.push(inds);
-}
-
-
-function rotateCamera(c: Camera, theta: number, phi: number) {
-  let theta_axis = new Point3D(0, 1, 0);
-  let phi_axis = new Point3D(-1, 0, 0);
-
-  c.render = rotatePoints(c.world, theta_axis, theta);
-  c.render = rotatePoints(c.render, phi_axis, phi);
-}
 
 function renderModel(c: Camera, m: Model){
-  let pts = c.render //m.verts;
+  let pts = m.verts //m.verts;
   let faces = m.faces;
 
   pts.forEach(pt =>
     displayPoint(c, snapPoint(c, pt))
   );
   
-  // Refactor dep on c.render
   faces.forEach(face =>
     displayFace(c, face)
   ); 
 
 }
 
-
-// TODO: Refactor so that models are rendered instead of individual pts and faces
+// TODO: refactor to handle more than 1 model
 function renderWorld(c: Camera) {
   c.ctx.clearRect(0, 0, c.canvas_xlim * 2, c.canvas_ylim * 2);
   renderModel(c, c.models[0])
@@ -166,8 +143,7 @@ function renderWorld(c: Camera) {
 function displayFace(c: Camera, face: number[]){
   if (c.ctx) {
     let m = c.models[0]; // Fix this
-
-    let pts = c.render.map( pt => snapPoint(c, pt))
+    let pts = m.verts.map( pt => snapPoint(c, pt))
     pts = pts.filter( pt => face.includes( pts.indexOf(pt) ) )
  
     c.ctx.beginPath();
@@ -209,7 +185,20 @@ function projectPoint(c: Camera, p: Point3D): number[] {
 
 // Analogous to the "viewing transform"
 function snapPoint(c: Camera, p: Point3D): CanvasPoint {
-  let [x, y] = projectPoint(c, p);
+  // Camera translation
+  let tmp = [p.x, p.y, p.z].map(
+    (el, i) => el - [c.position.x, c.position.y, c.position.z][i]
+  );
+  let pt = new Point3D(tmp[0], tmp[1], tmp[2]);
+  
+  // Camera rotation
+  let theta_axis = new Point3D(0, 1, 0);
+  let phi_axis = new Point3D(-1, 0, 0);
+
+  pt = rotatePoints([pt], theta_axis, c.theta)[0];
+  pt = rotatePoints([pt], phi_axis, c.phi)[0];
+
+  let [x, y] = projectPoint(c, pt);
   y = -y; // The canvas API is weird: pos y corresponds to down
 
   // transform world coordinates to canvas coordinates.
@@ -225,5 +214,5 @@ function snapPoint(c: Camera, p: Point3D): CanvasPoint {
   return new CanvasPoint(x, y);
 }
 
-export { addModelToWorld, renderWorld, Camera, rotateCamera, RotationAxis, Model };
+export { addModelToWorld, renderWorld, Camera, Model };
 //export * from "./camera";
