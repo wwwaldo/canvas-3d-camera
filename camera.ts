@@ -32,6 +32,8 @@ class Camera {
   world: Point3D[]; // TODO: update
   render: Point3D[];
 
+  faces: number[][];
+
   constructor(xlim: number, ylim: number, canvas: HTMLCanvasElement) {
     this.position = new Point3D(0, 0, 2);
 
@@ -46,6 +48,8 @@ class Camera {
     this.radius = 5;
     this.world = [];
     this.render = [];
+
+    this.faces = [];
   }
 }
 
@@ -60,6 +64,18 @@ function addToWorld(c: Camera, p: Point3D) {
   c.render.push(new Point3D(tmp[0], tmp[1], tmp[2]));
 }
 
+/* Add a face to the camera. */
+function addFace(c: Camera, face: number[]) {
+  let nverts = c.world.length;
+  let inds = face.slice(1, face.length); // discard first coord
+  
+  if ( !inds.every( ind => nverts >= ind ) ){
+    return -1;
+  }
+  c.faces.push(inds);
+}
+
+
 function rotateCamera(c: Camera, theta: number, phi: number) {
   let theta_axis = new Point3D(0, 1, 0);
   let phi_axis = new Point3D(-1, 0, 0);
@@ -70,12 +86,38 @@ function rotateCamera(c: Camera, theta: number, phi: number) {
 
 function renderWorld(c: Camera) {
   c.ctx.clearRect(0, 0, c.canvas_xlim * 2, c.canvas_ylim * 2);
+  
+  // TODO: Change this to Debug
   c.render.forEach(pt => {
     displayPoint(c, snapPoint(c, pt));
+  });
+
+  // No z-buffering: render faces
+  // this is all fucked up rn
+  c.faces.forEach(face => {
+    displayFace(c, face)
   });
 }
 
 /* Internals */
+
+function displayFace(c: Camera, face: number[]){
+  if (c.ctx) {
+    let pts = c.render.map( pt => snapPoint(c, pt))
+    pts = pts.filter( pt => face.includes( pts.indexOf(pt) ) )
+ 
+    c.ctx.beginPath();
+    c.ctx.moveTo( pts[0].x, pts[0].y );
+
+    pts.slice(1, pts.length).forEach(
+      pt => c.ctx.lineTo(pt.x, pt.y)
+    );
+    
+    //c.ctx.stroke(); // use c.ctx.fill() for fill triangles
+    c.ctx.fillStyle = `rgb(0, ${c.faces.indexOf(face) * 8}, 0)`;
+    c.ctx.fill();
+  }
+}
 
 function displayPoint(c: Camera, p: CanvasPoint) {
   if (c.ctx) {
@@ -119,5 +161,5 @@ function snapPoint(c: Camera, p: Point3D): CanvasPoint {
   return new CanvasPoint(x, y);
 }
 
-export { addToWorld, renderWorld, Camera, rotateCamera, RotationAxis };
+export { addToWorld, renderWorld, Camera, rotateCamera, RotationAxis, addFace };
 //export * from "./camera";

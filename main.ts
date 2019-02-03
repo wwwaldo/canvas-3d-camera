@@ -8,6 +8,9 @@ import * as quat from "./quaternion";
 const dodecahedron_verts: quat.Point3D[] = Object.values(
   require("./dodecahedron.json")
 );
+const dodecahedron_faces: number[][] = Object.values(
+  require("./dodeca_faces.json")
+) // If rendering a wireframe for debug, use "./dodeca_lines.json"
 
 // debug
 // const dodecahedron_verts: quat.Point3D[] = [new quat.Point3D(0, 0, -2)];
@@ -17,11 +20,11 @@ const canvas: HTMLCanvasElement = document.getElementById("theCanvas");
 const c = new camera.Camera(1, 1, canvas);
 
 dodecahedron_verts.forEach(pt => camera.addToWorld(c, pt));
+dodecahedron_faces.forEach(face => camera.addFace(c, face));
 
 // Register those callbacks!
 var theta : number = 0;
 var phi : number = 0;
-
 
 document.getElementById("theta").addEventListener("input", event => {
   // @ts-ignore
