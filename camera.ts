@@ -88,7 +88,7 @@ class Camera {
   phi: number;
 
   constructor(xlim: number, ylim: number, canvas: HTMLCanvasElement) {
-    this.position = new Point3D(0, 0, 0);
+    this.position = new Point3D(0, 0, 5);
 
     this.xlim = xlim;
     this.ylim = ylim;
@@ -160,20 +160,15 @@ function renderWorld(c: Camera) {
 /* Internals */
 
 function projectPoint(c: Camera, p: Point3D): number[] {
-  // orthographic projection ("lose the z coordinate")
-  // return [p.x, p.y];
+  let near = -0.01;
+  let far = -100;
+  if (!(p.z < near && p.z > far)){
+    return null;
+  }
 
-  // Perspective transformation
-  //let [n, f] = [znear, zfar];
-  let projected_point = [ // translated from perspective matrix
-    (p.x) / (1 - p.z / c.position.z),
-    (p.y) / (1 - p.z / c.position.z),
-    (p.z) / (1 - p.z / c.position.z)
-  ];
-
-  projected_point = [ p.x, p.y, p.z]
-
-  return [projected_point[0], projected_point[1], projected_point[2]];
+  // The ratio of the real y to the projected y is yproj / n = y / z =>
+  // yproj = (n/z) y
+  return [ p.x * (near / p.z), p.y * (near / p.z), p.z];
 }
 
 // Analogous to the "viewing transform"
@@ -191,10 +186,12 @@ function snapPoint(c: Camera, p: Point3D): CanvasPoint {
   pt = rotatePoints([pt], theta_axis, c.theta)[0];
   pt = rotatePoints([pt], phi_axis, c.phi)[0];
 
-  let [x, y, z] = projectPoint(c, pt);
-  if (z > 0){
+  let projected = projectPoint(c, pt);
+  if (projected === null){
     return null;
   }
+  let [x, y, z] = projected;
+
   y = -y; // The canvas API is weird: pos y corresponds to down
 
   // transform world coordinates to canvas coordinates.

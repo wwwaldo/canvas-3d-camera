@@ -18,7 +18,7 @@ const dodecahedron_faces: number[][] = Object.values(
 
 // @ts-ignore
 const canvas: HTMLCanvasElement = document.getElementById("theCanvas");
-const c = new camera.Camera(1, 1, canvas);
+const c = new camera.Camera(0.01, 0.01, canvas); //TODO: couple this to near plane length
 
 const m = new camera.Model(dodecahedron_verts, dodecahedron_faces);
 camera.addModelToWorld(c, m);
