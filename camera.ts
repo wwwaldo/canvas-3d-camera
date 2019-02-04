@@ -37,15 +37,21 @@ class Model {
     }
   }
 
-  rotateModel(){
-    let v = new Point3D(1, 0, 0); // 'wlog'
-    var time = performance.now() / 60 ** 4;
-    this.verts = rotatePoints(this.verts, v, (2 * Math.PI) * time);
-    
+  rotateModel(v: Point3D, auto=true){
+    if (auto){
+      var time = performance.now() / 60 ** 4;
+      this.verts = rotatePoints(this.verts, v, (2 * Math.PI) * time);
+    }
   }
 
   translateModel(v: Point3D){
+    this.verts = this.verts.map( vert => new Point3D(vert.x + v.x, vert.y + v.y, vert.z + v.z) );
+  }
+
+  detectCollision(p: Point3D){
     // TODO
+    // It probably makes sense to use spheres and boxes for collision geometry
+    // And some level set stuff
   }
 
 }
@@ -69,11 +75,16 @@ class CanvasPoint {
 class Camera {
   position: Point3D;
 
+  near: number; // near and far clipping planes
+  far: number;
+
   xlim: number; // limits of the projecting screen
   ylim: number;
 
   canvas_xlim: number; // inherited from the canvas
   canvas_ylim: number;
+
+
 
   ctx: any; // for drawing
 
@@ -81,27 +92,25 @@ class Camera {
   world: Point3D[]; // TODO: update
   render: Point3D[];
 
-  faces: number[][];
-
   models: Model[];
   theta: number;
   phi: number;
 
-  constructor(xlim: number, ylim: number, canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.position = new Point3D(0, 0, 5);
 
-    this.xlim = xlim;
-    this.ylim = ylim;
+    this.near = -0.01;
+    this.far = -100;
+
+    this.xlim = Math.abs(this.near) * Math.sqrt(3);
+    this.ylim = Math.abs(this.near);
 
     this.canvas_xlim = canvas.width / 2;
     this.canvas_ylim = canvas.height / 2;
 
     this.ctx = canvas.getContext("2d");
 
-    this.radius = 5;
-
-
-    this.faces = [];
+    this.radius = 2;
 
     this.models = [];
 
@@ -144,7 +153,7 @@ function renderModel(c: Camera, m: Model){
       pt => c.ctx.lineTo(pt.x, pt.y)
     );
     
-    c.ctx.stroke(); // use c.ctx.fill() for fill triangles
+    //c.ctx.stroke(); // use c.ctx.fill() for fill triangles
     c.ctx.fillStyle = `rgb(0, ${m.faces.indexOf(face) * 8}, 0)`;
     c.ctx.fill();
      
@@ -154,7 +163,8 @@ function renderModel(c: Camera, m: Model){
 // TODO: refactor to handle more than 1 model
 function renderWorld(c: Camera) {
   c.ctx.clearRect(0, 0, c.canvas_xlim * 2, c.canvas_ylim * 2);
-  renderModel(c, c.models[0])
+  //renderModel(c, c.models[1]);
+  c.models.forEach(model => renderModel(c, model));
 }
 
 /* Internals */

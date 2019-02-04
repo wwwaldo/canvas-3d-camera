@@ -24,6 +24,12 @@ class Point3D {
     this.y = y;
     this.z = z;
   }
+
+  public plus(other: Point3D){
+    return new Point3D(this.x + other.x,
+    this.y + other.y,
+    this.z + other.z);
+  }
 }
 
 // Utilities for quaternions
