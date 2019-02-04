@@ -43,6 +43,26 @@ document.getElementById("phi").addEventListener("input", event => {
   c.phi = phi;
 });
 
+// Navigation keys
+document.addEventListener('keydown', (event) => {
+  const keyName = event.key;
+  //console.log(keyName);
+  const speed = 0.1 // Better way to specify this?
+  if (keyName === "ArrowDown"){
+    c.position.z += speed;
+  } if (keyName === "ArrowUp" ){
+    c.position.z -= speed;
+  } if (keyName === "ArrowLeft"){
+    c.position.x -= speed;
+  } if (keyName === "ArrowRight"){
+    c.position.x += speed;
+  } if (keyName === "q"){
+    c.position.y -= speed;
+  } if (keyName === "e"){
+    c.position.y += speed;
+  }
+})
+
 
 function draw(){
   c.models[0].rotateModel();
