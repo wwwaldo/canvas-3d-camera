@@ -88,7 +88,7 @@ class Camera {
   phi: number;
 
   constructor(xlim: number, ylim: number, canvas: HTMLCanvasElement) {
-    this.position = new Point3D(0, 0, -2);
+    this.position = new Point3D(0, 0, 0);
 
     this.xlim = xlim;
     this.ylim = ylim;
@@ -119,17 +119,36 @@ function addModelToWorld(c: Camera, m: Model){
     add it to the world. */
 
 function renderModel(c: Camera, m: Model){
-  let pts = m.verts //m.verts;
-  let faces = m.faces;
+  // No error handling here!
 
-  pts.forEach(pt =>
-    displayPoint(c, snapPoint(c, pt))
-  );
-  
-  faces.forEach(face =>
-    displayFace(c, face)
-  ); 
+  m.faces.forEach(face => {
+    let pts = face.map( idx => snapPoint(c, 
+      m.verts[idx]) );
+    
+    // Do not render pts behind camera
+    if (!pts.every( el => el != null)){
+      return;
+    }
+    
+    if (true){ // Render pts (debug only)
+      pts.forEach(p => {
+        c.ctx.beginPath();
+        c.ctx.arc(p.x, p.y, c.radius, 0, Math.PI * 2);
+        c.ctx.closePath();
+        c.ctx.fill();
+    });}
 
+    c.ctx.beginPath();
+    c.ctx.moveTo( pts[0].x, pts[0].y );
+    pts.slice(1, pts.length).forEach(
+      pt => c.ctx.lineTo(pt.x, pt.y)
+    );
+    
+    c.ctx.stroke(); // use c.ctx.fill() for fill triangles
+    c.ctx.fillStyle = `rgb(0, ${m.faces.indexOf(face) * 8}, 0)`;
+    c.ctx.fill();
+     
+  });
 }
 
 // TODO: refactor to handle more than 1 model
@@ -139,34 +158,6 @@ function renderWorld(c: Camera) {
 }
 
 /* Internals */
-
-function displayFace(c: Camera, face: number[]){
-  if (c.ctx) {
-    let m = c.models[0]; // Fix this
-    let pts = m.verts.map( pt => snapPoint(c, pt))
-    pts = pts.filter( pt => face.includes( pts.indexOf(pt) ) )
- 
-    c.ctx.beginPath();
-    c.ctx.moveTo( pts[0].x, pts[0].y );
-
-    pts.slice(1, pts.length).forEach(
-      pt => c.ctx.lineTo(pt.x, pt.y)
-    );
-    
-    //c.ctx.stroke(); // use c.ctx.fill() for fill triangles
-    c.ctx.fillStyle = `rgb(0, ${m.faces.indexOf(face) * 8}, 0)`;
-    c.ctx.fill();
-  }
-}
-
-function displayPoint(c: Camera, p: CanvasPoint) {
-  if (c.ctx) {
-    c.ctx.beginPath();
-    c.ctx.arc(p.x, p.y, c.radius, 0, Math.PI * 2);
-    c.ctx.closePath();
-    c.ctx.fill();
-  }
-}
 
 function projectPoint(c: Camera, p: Point3D): number[] {
   // orthographic projection ("lose the z coordinate")
@@ -180,7 +171,9 @@ function projectPoint(c: Camera, p: Point3D): number[] {
     (p.z) / (1 - p.z / c.position.z)
   ];
 
-  return [projected_point[0], projected_point[1]];
+  projected_point = [ p.x, p.y, p.z]
+
+  return [projected_point[0], projected_point[1], projected_point[2]];
 }
 
 // Analogous to the "viewing transform"
@@ -198,7 +191,10 @@ function snapPoint(c: Camera, p: Point3D): CanvasPoint {
   pt = rotatePoints([pt], theta_axis, c.theta)[0];
   pt = rotatePoints([pt], phi_axis, c.phi)[0];
 
-  let [x, y] = projectPoint(c, pt);
+  let [x, y, z] = projectPoint(c, pt);
+  if (z > 0){
+    return null;
+  }
   y = -y; // The canvas API is weird: pos y corresponds to down
 
   // transform world coordinates to canvas coordinates.
