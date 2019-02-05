@@ -16,7 +16,7 @@ I had parcel 1.11.0 on my local machine at the time of install.
 
 2. Clone the repo.
 
-3. From the repo directory, build using `parcel view/index.html`. Assuming parcel works, you should see a dev server with the camera demo.
+3. From the repo directory, build using `parcel index.html`. Assuming parcel works, you should see a dev server with the camera demo.
 
 ## About
 
