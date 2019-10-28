@@ -2,7 +2,7 @@
 
 ## Live Demo
 
-See [this webpage](http://caroline-lin.com/camera).
+See [this webpage](http://rylin.cc/camera).
 
 ## Building
 
