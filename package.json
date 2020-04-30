@@ -5,6 +5,6 @@
   },
   "dependencies": {
     "@types/node": "^10.12.18",
-    "jquery": "^3.3.1"
+    "jquery": "^3.5.0"
   }
 }
