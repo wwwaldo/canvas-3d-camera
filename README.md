@@ -46,4 +46,4 @@ and copy the `dist` folder to your server directory. See my confused [StackExcha
 
 ## Credits
 
-Built by Caroline Lin (caroline-lin).
+Built by Waldo Lin (wwwaldo).

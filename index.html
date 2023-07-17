@@ -40,21 +40,20 @@
   </aside>
 
   <section class="main">
-    <p>Welcome to the semantic web!</p>
+    <p>Welcome to the semantic web! Move around with the arrow keys.</p>
 
     <canvas height="800" width="1360" id="theCanvas"> </canvas>
   </section>
 
   <script>
-    // Placeholder code
     var canvas = document.getElementById("theCanvas");
     var context = canvas.getContext("2d");
 
-    // Set contex colour to green (temporary)
+    // Set context colour to green (temporary)
     // w/ some transparency
     context.fillStyle = "green";
     context.globalAlpha = 0.2;
   </script>
 
-  <script src="./main.ts"></script>
+  <script type="module" src="./main.ts"></script>
 </body>
