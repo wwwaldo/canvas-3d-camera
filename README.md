@@ -2,7 +2,7 @@
 
 ## Live Demo
 
-See [this webpage](http://rylin.cc/camera).
+See [this webpage](https://wwwaldo.github.io).
 
 ## Building
 
